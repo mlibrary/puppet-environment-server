@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'open3'
-require 'pathname'
-require 'yaml'
+require "open3"
+require "pathname"
+require "yaml"
 
-DEFAULT_R10K_CONFIG = Pathname.new('/etc/puppetlabs/r10k/r10k.yaml')
+DEFAULT_R10K_CONFIG = Pathname.new("/etc/puppetlabs/r10k/r10k.yaml")
 
 # tests are documentation, rubocop
 class Reposync
@@ -19,11 +19,11 @@ class Reposync
 
   def deploy!
     if ref_is_a_branch?
-      raise 'you cannot have a master environment' if branch == 'master'
+      raise "you cannot have a master environment" if branch == "master"
 
       if control_repo_has_branch?
         deploy_environment
-        update_libraries unless branch == 'production'
+        update_libraries unless branch == "production"
 
       else
         remove_environment
@@ -33,7 +33,7 @@ class Reposync
 
   def update_libraries!
     if ref_is_a_branch? && control_repo_has_branch?
-      deploy_environment unless branch == 'master'
+      deploy_environment unless branch == "master"
       update_libraries
     end
   end
@@ -47,7 +47,7 @@ class Reposync
   end
 
   def control_repo_has_branch?
-    branch == 'master' || PuppetGitUtilities.control_repo_has_branch?(branch)
+    branch == "master" || PuppetGitUtilities.control_repo_has_branch?(branch)
   end
 
   def deploy_environment
@@ -60,7 +60,7 @@ class Reposync
 
   def update_libraries
     if %w[master production].include? branch
-      PuppetGitUtilities.update_libraries 'production'
+      PuppetGitUtilities.update_libraries "production"
     else
       PuppetGitUtilities.write_new_puppetfile(branch, branch)
       PuppetGitUtilities.update_libraries branch
@@ -89,7 +89,7 @@ class PuppetGitUtilities
   end
 
   def self.update_libraries(environment)
-    _, _, status = Open3.capture3('librarian-puppet update',
+    _, _, status = Open3.capture3("librarian-puppet update",
       chdir: PuppetGitUtilities.environment_path(environment).to_s)
     raise "librarian-puppet failed to update #{environment}" unless status.success?
   end
@@ -116,11 +116,11 @@ class PuppetGitUtilities
   end
 
   def self.puppetfile(environment)
-    PuppetGitUtilities.environment_path(environment) / 'Puppetfile'
+    PuppetGitUtilities.environment_path(environment) / "Puppetfile"
   end
 
   def self.environment_path(environment)
-    PuppetGitUtilities.environments / environment.tr('-', '_')
+    PuppetGitUtilities.environments / environment.tr("-", "_")
   end
 
   def self.control_repo_has_branch?(branch)
@@ -133,11 +133,11 @@ class PuppetGitUtilities
   end
 
   def self.control_repo
-    Pathname.new(PuppetGitUtilities.main_source['remote'])
+    Pathname.new(PuppetGitUtilities.main_source["remote"])
   end
 
   def self.environments
-    Pathname.new(PuppetGitUtilities.main_source['basedir'])
+    Pathname.new(PuppetGitUtilities.main_source["basedir"])
   end
 
   def self.main_source # rubocop:disable Metrics/MethodLength
@@ -145,12 +145,12 @@ class PuppetGitUtilities
     sources = if data.key? :sources
       data[:sources]
     else
-      data['sources']
+      data["sources"]
     end
 
     sources.each_value do |values|
-      return values unless values.key? 'prefix'
-      return values unless values['prefix']
+      return values unless values.key? "prefix"
+      return values unless values["prefix"]
     end
 
     raise "couldn't parse r10k config #{PuppetGitUtilities.r10k_config_path}"
@@ -165,7 +165,7 @@ class PuppetGitUtilities
   end
 
   def self.r10k_config
-    path = ENV['PUPPET_R10K_CONFIG']
-    Pathname.new(path) unless [nil, '', DEFAULT_R10K_CONFIG.to_s].include? path
+    path = ENV["PUPPET_R10K_CONFIG"]
+    Pathname.new(path) unless [nil, "", DEFAULT_R10K_CONFIG.to_s].include? path
   end
 end
